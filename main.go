@@ -335,6 +335,12 @@ func onRegisterMessage() {
 
 		if len(registerMessage) > 0 {
 			args := strings.Split(registerMessage, ",")
+			key := args[0] + "_register"
+			val := redisClient.Get(redisClient.Context(), key).Val()
+			if len(val) > 0 {
+				fmt.Println("注册消息重复")
+			}
+			redisClient.Set(redisClient.Context(), key, "1", 30*time.Minute)
 			insertData("insert into main.register(phone, content, create_time) values (?,?,CURRENT_TIMESTAMP)", args)
 			fmt.Println("注册消息成功落库", registerMessage)
 		}
@@ -350,6 +356,12 @@ func onLotteryMessage() {
 
 		if len(lotteryMessage) > 0 {
 			args := strings.Split(lotteryMessage, ",")
+			key := args[0] + "_" + args[1] + "_" + args[2]
+			val := redisClient.Get(redisClient.Context(), key).Val()
+			if len(val) > 0 {
+				fmt.Println("抽奖消息重复")
+			}
+			redisClient.Set(redisClient.Context(), key, "1", 30*time.Minute)
 			insertData("insert into main.lottery(phone, result, cur_day, create_time) VALUES (?,?,?,current_timestamp)", args)
 			fmt.Println("抽奖消息成功落库", lotteryMessage)
 		}
